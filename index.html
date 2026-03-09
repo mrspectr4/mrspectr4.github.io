@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Danish Delwar — Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg:      #0a0a0f;
+        --surface: #13131a;
+        --border:  #2a2a3a;
+        --text:    #e8e6f0;
+        --muted:   #6b6880;
+        --accent:  #7c6af7;
+        --accent2: #f27c6a;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 300;
+        line-height: 1.7;
+      }
+
+      .container { max-width: 800px; margin: 0 auto; padding: 0 2rem; }
+
+      /* ── Nav ── */
+      nav {
+        position: sticky; top: 0; z-index: 100;
+        background: rgba(10,10,15,.85);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+        padding: 1rem 0;
+      }
+      nav .container { display: flex; justify-content: flex-end; align-items: center; gap: 2.5rem; }
+      nav a {
+        text-decoration: none; font-size: .82rem; font-weight: 500;
+        letter-spacing: .1em; text-transform: uppercase;
+        color: var(--muted); transition: color .2s;
+        padding-bottom: 3px; border-bottom: 2px solid transparent;
+      }
+      /* JS will add/remove .active — this is what makes it light up */
+      nav a.active, nav a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+      /* ── Header ── */
+      header { padding: 7rem 0 5rem; border-bottom: 1px solid var(--border); }
+      .eyebrow {
+        display: inline-block; font-size: .75rem; font-weight: 500;
+        letter-spacing: .2em; text-transform: uppercase; color: var(--accent);
+        margin-bottom: 1.2rem; padding: .3rem .8rem;
+        border: 1px solid rgba(124,106,247,.3); border-radius: 100px;
+      }
+      header h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(3rem, 8vw, 5rem);
+        font-weight: 700; line-height: 1.05;
+        letter-spacing: -.02em; margin-bottom: 1rem;
+      }
+      header h1 em {
+        font-style: italic; font-weight: 400;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      /* FEATURE 1: The typing animation targets .tagline
+         JS rewrites its text every 2 seconds */
+      .tagline {
+        font-size: 1.1rem; color: var(--muted); max-width: 480px; margin-top: .5rem;
+        min-height: 2rem; /* stops layout jumping when text changes */
+      }
+      /* The blinking cursor is a CSS pseudo-element — pure CSS trick! */
+      .tagline::after {
+        content: '|';
+        color: var(--accent);
+        animation: blink .7s step-end infinite;
+      }
+      @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+      /* ── Sections ── */
+      section { padding: 5rem 0; border-bottom: 1px solid var(--border); }
+      section h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem; font-weight: 700; margin-bottom: 2rem;
+        padding-bottom: .8rem;
+        border-bottom: 2px solid transparent;
+        border-image: linear-gradient(90deg, var(--accent), transparent) 1;
+      }
+      #about p { color: var(--muted); font-size: 1.05rem; max-width: 560px; }
+
+      /* ── Skills ── */
+      #skills ul {
+        list-style: none; display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: .75rem;
+      }
+      #skills li {
+        text-align: center; padding: .6rem 1rem;
+        font-size: .88rem; font-weight: 500;
+        border: 1px solid var(--border); border-radius: 6px; color: var(--muted);
+        transition: border-color .2s, color .2s, background .2s;
+      }
+      #skills li:hover { border-color: var(--accent); color: var(--accent); background: rgba(124,106,247,.07); }
+
+      /* ── FEATURE 3: Filter buttons ── */
+      .filter-bar {
+        display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 2rem;
+      }
+      .filter-btn {
+        background: none; border: 1px solid var(--border);
+        color: var(--muted); font-family: 'Space Grotesk', sans-serif;
+        font-size: .8rem; font-weight: 500; letter-spacing: .08em;
+        text-transform: uppercase; padding: .4rem 1rem; border-radius: 100px;
+        cursor: pointer; /* shows a hand cursor on hover */
+        transition: border-color .2s, color .2s, background .2s;
+      }
+      /* JS adds .active to the selected filter button */
+      .filter-btn.active, .filter-btn:hover {
+        border-color: var(--accent); color: var(--accent);
+        background: rgba(124,106,247,.1);
+      }
+
+      /* ── Projects ── */
+      .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+      .project-card {
+        background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+        padding: 2rem; display: flex; flex-direction: column; gap: .75rem;
+        transition: border-color .25s, transform .25s, opacity .3s, scale .3s;
+      }
+      .project-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+
+      /* FEATURE 3: JS adds .hidden to cards that don't match the filter */
+      .project-card.hidden { opacity: 0; scale: .97; pointer-events: none; display: none; }
+
+      .project-tag {
+        display: inline-block; font-size: .7rem; font-weight: 500; letter-spacing: .1em;
+        text-transform: uppercase; color: var(--accent2);
+        background: rgba(242,124,106,.1); border-radius: 4px;
+        padding: .15rem .5rem; align-self: flex-start;
+      }
+      .project-card h3 { font-family: 'Playfair Display', serif; font-size: 1.25rem; }
+      .project-card p  { font-size: .92rem; color: var(--muted); flex: 1; }
+      .project-card a  {
+        align-self: flex-start; font-size: .8rem; font-weight: 500;
+        letter-spacing: .1em; text-transform: uppercase;
+        text-decoration: none; color: var(--accent); transition: color .2s;
+      }
+      .project-card a:hover { color: var(--accent2); }
+
+      /* ── FEATURE 4: Contact form ── */
+      .form-group { display: flex; flex-direction: column; gap: .4rem; margin-bottom: 1.2rem; }
+      label { font-size: .82rem; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+      input, textarea {
+        background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+        color: var(--text); font-family: 'Space Grotesk', sans-serif;
+        font-size: .95rem; padding: .75rem 1rem;
+        transition: border-color .2s; outline: none; resize: vertical;
+      }
+      input:focus, textarea:focus { border-color: var(--accent); }
+      .btn {
+        display: inline-block; text-decoration: none; font-size: .85rem; font-weight: 500;
+        letter-spacing: .1em; text-transform: uppercase; padding: .85rem 2.2rem;
+        border-radius: 6px; border: none; cursor: pointer;
+        background: linear-gradient(135deg, var(--accent), #5a4fd4); color: #fff;
+        transition: opacity .2s, transform .2s;
+      }
+      .btn:hover { opacity: .85; transform: translateY(-2px); }
+
+      /* FEATURE 4: Success message, hidden until JS shows it */
+      .form-success {
+        display: none; /* JS changes this to "block" */
+        margin-top: 1rem; padding: 1rem 1.4rem;
+        background: rgba(124,106,247,.1); border: 1px solid rgba(124,106,247,.3);
+        border-radius: 8px; color: var(--accent); font-size: .95rem;
+      }
+
+      /* ── FEATURE 5: Scroll progress bar ── */
+      #progress-bar {
+        position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+        background: linear-gradient(90deg, var(--accent), var(--accent2));
+        z-index: 200; transition: width .1s linear;
+      }
+
+      /* ── Footer ── */
+      footer { padding: 2.5rem 0; font-size: .82rem; color: var(--muted); text-align: center; }
+
+      @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+      header    { animation: fadeUp .6s ease both; }
+      #about    { animation: fadeUp .6s ease .1s both; }
+      #skills   { animation: fadeUp .6s ease .2s both; }
+      #projects { animation: fadeUp .6s ease .3s both; }
+      #contact  { animation: fadeUp .6s ease .4s both; }
+
+      @media (max-width: 600px) {
+        header { padding: 4rem 0 3rem; }
+        section { padding: 3.5rem 0; }
+        nav .container { justify-content: center; gap: 1.5rem; }
+        .project-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- FEATURE 5: Scroll progress bar — JS sets its width -->
+    <div id="progress-bar"></div>
+
+    <nav>
+      <div class="container">
+        <a href="#about">About</a>
+        <a href="#skills">Skills</a>
+        <a href="#projects">Projects</a>
+        <a href="#contact">Contact</a>
+      </div>
+    </nav>
+
+    <header>
+      <div class="container">
+        <span class="eyebrow">Portfolio · 2026</span>
+        <h1>Jane <em>Doe</em></h1>
+        <!-- FEATURE 1: JS will rewrite this text with a typing animation -->
+        <p class="tagline">Front-end developer</p>
+      </div>
+    </header>
+
+    <section id="about">
+      <div class="container">
+        <h2>About Me</h2>
+        <p>Hi! I'm Danish, a self-taught developer based in Semenyih. 
+          I enjoy building things for the web and am constantly learning new tools and techniques. When I'm not coding, I love hiking and running.</p>
+      </div>
+    </section>
+
+    <section id="skills">
+      <div class="container">
+        <h2>Skills</h2>
+        <ul>
+          <li>HTML</li><li>CSS</li><li>JavaScript</li>
+          <li>Responsive Design</li><li>Git &amp; GitHub</li>
+          <li>Accessibility</li><li>R Programming Language</li>
+          <li>Google Sheets &amp; MS Excel</li>
+          <li>SQL(BigQuery)</li> <li>Autocad</li><li>CATIA</li>
+          <li>Fusion360</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="projects">
+      <div class="container">
+        <h2>Projects</h2>
+
+        <!-- FEATURE 3: Filter buttons — data-tag tells JS which category to show -->
+        <div class="filter-bar">
+          <button class="filter-btn active" data-tag="all">All</button>
+          <button class="filter-btn" data-tag="js">JavaScript</button>
+          <button class="filter-btn" data-tag="css">CSS</button>
+          <button class="filter-btn" data-tag="material">Material Science</button>
+          <button class="filter-btn" data-tag="gsheets">Google Sheets</button>
+          <button class="filter-btn" data-tag="cad">AutoCAD/CATIA/Fusion360</button>
+        </div>
+
+        <div class="project-grid">
+          <!-- data-tags on each card tells JS what category it belongs to -->
+          <div class="project-card" data-tags="js">
+            <span class="project-tag">JavaScript</span>
+            <h3>Weathercraft</h3>
+            <p>A simple weather dashboard showing a 5-day forecast using a public API. Built with vanilla JavaScript.</p>
+            <a href="weathercraft.html">View Project →</a>
+          </div>
+          <div class="project-card" data-tags="material">
+            <span class="project-tag">Material Science</span>
+            <h3>Controlling Intermetallic Compound Growth in Lead-Free Solder via Alloying Addition</h3>
+            <p>Enhancing the durability of soldered components by reducing the IMC Thickness</p>
+            <a href="Putra SemiNex _ 2526_B_0036 _ Micron Proposal _ Controlling Intermetallic Compound Growth in Lead-Free Solder via Alloying Addition .pdf">View Project →</a>
+          </div>
+          <div class="project-card" data-tags="css">
+            <span class="project-tag">CSS</span>
+            <h3>This Portfolio</h3>
+            <p>My personal portfolio — built from scratch with HTML, CSS, and JavaScript as part of my learning journey.</p>
+            <a href="my-portfolio.html">View Source →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <div class="container">
+        <h2>Get In Touch</h2>
+
+        <!-- FEATURE 4: Contact form — JS handles the submit event -->
+        <div class="form-group">
+          <label for="name">Your Name</label>
+          <input type="text" id="name" placeholder="Jane Smith" />
+        </div>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" placeholder="jane@example.com" />
+        </div>
+        <div class="form-group">
+          <label for="message">Message</label>
+          <textarea id="message" rows="4" placeholder="Hi Danish, I'd love to work together..."></textarea>
+        </div>
+        <button class="btn" id="send-btn">Send Message</button>
+        <div class="form-success" id="form-success">
+          ✓ Message sent! I'll get back to you soon.
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="container">
+        <p>© 2026 Danish D. · Built with HTML, CSS &amp; JavaScript</p>
+      </div>
+    </footer>
+
+
+    <script>
+      // ================================================================
+      // FEATURE 1: TYPING ANIMATION
+      // Concepts: arrays, variables, setInterval, template literals
+      // ================================================================
+
+      // An array stores a list of values
+      const roles = [
+        "Front-end Developer",
+        "UI Designer",
+        "Problem Solver",
+        "Lifelong Learner",
+        "Student",
+        "Engineer"
+      ];
+
+      // Select the element we want to update
+      const tagline = document.querySelector(".tagline");
+
+      let roleIndex = 0; // tracks which role to show next
+
+      // setInterval calls a function repeatedly every N milliseconds
+      setInterval(() => {
+        roleIndex = (roleIndex + 1) % roles.length; // loop back to 0 at the end
+        tagline.textContent = roles[roleIndex];      // update the text on screen
+      }, 2500);
+
+
+      // ================================================================
+      // FEATURE 2: ACTIVE NAV HIGHLIGHT ON SCROLL
+      // Concepts: querySelectorAll, forEach, IntersectionObserver, classList
+      // ================================================================
+
+      // querySelectorAll returns a NodeList (list) of ALL matching elements
+      const sections = document.querySelectorAll("section");
+      const navLinks = document.querySelectorAll("nav a");
+
+      // IntersectionObserver fires a callback when elements enter/leave the viewport
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          // entry.isIntersecting = true when the section is visible
+          if (entry.isIntersecting) {
+            // Remove .active from ALL nav links
+            navLinks.forEach(link => link.classList.remove("active"));
+
+            // Add .active only to the link matching the visible section
+            // Template literal: `#${entry.target.id}` builds a string like "#about"
+            const activeLink = document.querySelector(`nav a[href="#${entry.target.id}"]`);
+            if (activeLink) activeLink.classList.add("active");
+          }
+        });
+      }, { threshold: 0.4 }); // fires when 40% of a section is visible
+
+      // Tell the observer to watch each section
+      sections.forEach(section => observer.observe(section));
+
+
+      // ================================================================
+      // FEATURE 3: PROJECT FILTER
+      // Concepts: addEventListener, dataset, classList, forEach
+      // ================================================================
+
+      const filterBtns = document.querySelectorAll(".filter-btn");
+      const projectCards = document.querySelectorAll(".project-card");
+
+      filterBtns.forEach(btn => {
+        // addEventListener listens for a "click" event on each button
+        btn.addEventListener("click", () => {
+
+          // Update which button looks active
+          filterBtns.forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          // btn.dataset.tag reads the data-tag="..." attribute from the HTML
+          const selectedTag = btn.dataset.tag;
+
+          projectCards.forEach(card => {
+            // Two conditions to SHOW a card:
+            // 1) "All" is selected, OR
+            // 2) the card's data-tags matches the selected filter
+            const shouldShow = selectedTag === "all" || card.dataset.tags === selectedTag;
+
+            // classList.toggle(className, condition)
+            // adds the class if condition is false, removes it if true
+            card.classList.toggle("hidden", !shouldShow);
+          });
+        });
+      });
+
+
+      // ================================================================
+      // FEATURE 4: CONTACT FORM VALIDATION + SUBMISSION
+      // Concepts: addEventListener, if/else, DOM manipulation, .value
+      // ================================================================
+
+      const sendBtn = document.getElementById("send-btn");
+      const successMsg = document.getElementById("form-success");
+
+      sendBtn.addEventListener("click", () => {
+        // .value reads what the user typed into an input field
+        const name    = document.getElementById("name").value.trim();
+        const email   = document.getElementById("email").value.trim();
+        const message = document.getElementById("message").value.trim();
+
+        // if/else: check conditions and run different code
+        if (!name || !email || !message) {
+          // If any field is empty, flash the border red
+          [name, email, message].forEach((val, i) => {
+            const inputs = [
+              document.getElementById("name"),
+              document.getElementById("email"),
+              document.getElementById("message")
+            ];
+            if (!val) {
+              inputs[i].style.borderColor = "var(--accent2)"; // red border
+              setTimeout(() => inputs[i].style.borderColor = "", 2000); // reset after 2s
+            }
+          });
+          return; // stop here — don't continue
+        }
+
+        // If all fields are filled, show success message
+        successMsg.style.display = "block";
+        sendBtn.textContent = "Sent ✓";
+        sendBtn.style.opacity = ".5";
+        sendBtn.disabled = true; // prevent double-sending
+      });
+
+
+      // ================================================================
+      // FEATURE 5: SCROLL PROGRESS BAR
+      // Concepts: scroll event, Math, style manipulation
+      // ================================================================
+
+      const progressBar = document.getElementById("progress-bar");
+
+      // "scroll" event fires every time the user scrolls
+      window.addEventListener("scroll", () => {
+        // scrollY = how far from the top the user has scrolled (in pixels)
+        const scrollY = window.scrollY;
+
+        // Total scrollable height = full page height minus the viewport height
+        const totalHeight = document.body.scrollHeight - window.innerHeight;
+
+        // Calculate percentage scrolled (0 to 100)
+        const progress = (scrollY / totalHeight) * 100;
+
+        // Set the width of the progress bar
+        progressBar.style.width = progress + "%";
+      });
+
+    </script>
+  </body>
+</html>
