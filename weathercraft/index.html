@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WeatherCraft</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <style>
+    /* ── PIXEL ART CURSOR ── */
+    * { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Crect width='4' height='4' fill='%23ff69b4'/%3E%3Crect x='4' y='4' width='4' height='4' fill='%23ff69b4'/%3E%3Crect x='8' y='8' width='4' height='4' fill='%23ff69b4'/%3E%3Crect x='12' y='12' width='4' height='4' fill='%23ff69b4'/%3E%3C/svg%3E") 0 0, crosshair; }
+
+    :root {
+      --pink:       #ff69b4;
+      --hot-pink:   #ff1493;
+      --pink-dark:  #c71585;
+      --pink-pale:  #ffb6d9;
+      --cyan:       #00f5ff;
+      --yellow:     #ffe600;
+      --green:      #39ff14;
+      --orange:     #ff6600;
+      --purple:     #bf00ff;
+      --bg:         #1a0a12;
+      --dirt:       #2d1b0e;
+      --stone:      #1e1e2e;
+      --panel:      #0d0d1a;
+      --border-px:  4px;
+    }
+
+    /* ── RESET ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      background-image:
+        /* pixel grid overlay */
+        linear-gradient(rgba(255,105,180,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,105,180,.03) 1px, transparent 1px);
+      background-size: 16px 16px;
+      font-family: 'Press Start 2P', monospace;
+      color: var(--pink-pale);
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+      image-rendering: pixelated;
+    }
+
+    /* ── SCANLINE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,.18) 2px,
+        rgba(0,0,0,.18) 4px
+      );
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* ── PIXEL BORDER MIXIN (applied via classes) ── */
+    .px-box {
+      border: var(--border-px) solid var(--pink);
+      box-shadow:
+        /* outer glow */
+        0 0 0 4px var(--pink-dark),
+        0 0 20px rgba(255,105,180,.4),
+        /* inner highlight */
+        inset 4px 4px 0 rgba(255,255,255,.1),
+        inset -4px -4px 0 rgba(0,0,0,.4);
+      image-rendering: pixelated;
+    }
+
+    /* ── HEADER ── */
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      animation: flicker 4s infinite;
+    }
+
+    .game-title {
+      font-size: clamp(.9rem, 3vw, 1.6rem);
+      color: var(--pink);
+      text-shadow:
+        4px 4px 0 var(--pink-dark),
+        0 0 20px var(--pink),
+        0 0 40px var(--hot-pink);
+      letter-spacing: .1em;
+      margin-bottom: .5rem;
+      display: block;
+    }
+
+    .game-subtitle {
+      font-size: .45rem;
+      color: var(--pink-pale);
+      letter-spacing: .2em;
+      opacity: .7;
+    }
+
+    /* ── SEARCH BAR ── */
+    .search-wrap {
+      max-width: 600px;
+      margin: 0 auto 2rem;
+      display: flex;
+      gap: 0;
+    }
+
+    .search-wrap input {
+      flex: 1;
+      background: var(--panel);
+      border: 4px solid var(--pink);
+      border-right: none;
+      color: var(--pink);
+      font-family: 'Press Start 2P', monospace;
+      font-size: .55rem;
+      padding: .9rem 1rem;
+      outline: none;
+      letter-spacing: .05em;
+      box-shadow: inset 4px 4px 0 rgba(0,0,0,.5);
+    }
+
+    .search-wrap input::placeholder { color: var(--pink-dark); opacity: .8; }
+    .search-wrap input:focus { border-color: var(--cyan); box-shadow: 0 0 12px rgba(0,245,255,.4), inset 4px 4px 0 rgba(0,0,0,.5); }
+
+    .search-wrap button {
+      background: var(--hot-pink);
+      border: 4px solid var(--pink);
+      color: #fff;
+      font-family: 'Press Start 2P', monospace;
+      font-size: .5rem;
+      padding: .9rem 1.2rem;
+      letter-spacing: .05em;
+      transition: background .1s, transform .1s;
+      box-shadow: 4px 4px 0 var(--pink-dark);
+    }
+
+    .search-wrap button:hover {
+      background: var(--pink);
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 var(--pink-dark);
+    }
+
+    .search-wrap button:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 var(--pink-dark);
+    }
+
+    /* ── MAIN PANEL ── */
+    .main-panel {
+      max-width: 700px;
+      margin: 0 auto;
+      background: var(--panel);
+      padding: 2rem;
+      animation: slideIn .4s steps(8) both;
+    }
+
+    /* ── CURRENT WEATHER ── */
+    .current-weather {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1.5rem;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 4px solid var(--pink-dark);
+    }
+
+    /* pixel art weather icon made entirely from CSS box-shadows */
+    .weather-icon {
+      width: 64px;
+      height: 64px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .weather-icon canvas {
+      image-rendering: pixelated;
+      width: 64px;
+      height: 64px;
+    }
+
+    .city-name {
+      font-size: clamp(.6rem, 2vw, .9rem);
+      color: var(--cyan);
+      text-shadow: 2px 2px 0 #003344, 0 0 10px var(--cyan);
+      margin-bottom: .8rem;
+      letter-spacing: .05em;
+    }
+
+    .temp-big {
+      font-size: clamp(1.4rem, 5vw, 2.5rem);
+      color: var(--yellow);
+      text-shadow: 4px 4px 0 #665500, 0 0 20px var(--yellow);
+      line-height: 1;
+      margin-bottom: .6rem;
+    }
+
+    .condition {
+      font-size: .5rem;
+      color: var(--pink-pale);
+      letter-spacing: .1em;
+      margin-bottom: .8rem;
+    }
+
+    .stats-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .6rem;
+    }
+
+    .stat-pill {
+      font-size: .38rem;
+      padding: .3rem .6rem;
+      border: 2px solid;
+      letter-spacing: .05em;
+    }
+
+    .stat-pill.wind  { border-color: var(--cyan);   color: var(--cyan); }
+    .stat-pill.humid { border-color: var(--green);  color: var(--green); }
+    .stat-pill.feels { border-color: var(--orange); color: var(--orange); }
+    .stat-pill.uv    { border-color: var(--purple); color: var(--purple); }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-size: .45rem;
+      color: var(--pink);
+      letter-spacing: .15em;
+      margin-bottom: 1rem;
+      padding: .4rem .6rem;
+      background: var(--pink-dark);
+      display: inline-block;
+      box-shadow: 3px 3px 0 #600040;
+    }
+
+    /* ── 5-DAY FORECAST ── */
+    .forecast-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: .6rem;
+      margin-bottom: 2rem;
+    }
+
+    .forecast-card {
+      background: var(--stone);
+      border: 3px solid var(--pink-dark);
+      padding: .7rem .4rem;
+      text-align: center;
+      transition: border-color .1s, transform .1s;
+      box-shadow: 3px 3px 0 #000;
+    }
+
+    .forecast-card:hover {
+      border-color: var(--pink);
+      transform: translate(-2px, -2px);
+      box-shadow: 5px 5px 0 #000;
+    }
+
+    .forecast-day   { font-size: .35rem; color: var(--pink-pale); margin-bottom: .5rem; letter-spacing: .05em; }
+    .forecast-emoji { font-size: 1.4rem; margin-bottom: .5rem; display: block; }
+    .forecast-hi    { font-size: .45rem; color: var(--yellow); margin-bottom: .2rem; }
+    .forecast-lo    { font-size: .38rem; color: var(--cyan); }
+
+    /* ── HOURLY BAR ── */
+    .hourly-scroll {
+      display: flex;
+      gap: .6rem;
+      overflow-x: auto;
+      padding-bottom: .8rem;
+      margin-bottom: 2rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--pink) var(--panel);
+    }
+
+    .hour-block {
+      flex-shrink: 0;
+      background: var(--stone);
+      border: 3px solid var(--pink-dark);
+      padding: .6rem .5rem;
+      text-align: center;
+      min-width: 70px;
+      box-shadow: 3px 3px 0 #000;
+      transition: border-color .1s;
+    }
+
+    .hour-block:hover { border-color: var(--hot-pink); }
+    .hour-block.now   { border-color: var(--pink); background: rgba(255,20,147,.12); }
+
+    .hour-time  { font-size: .32rem; color: var(--pink-pale); margin-bottom: .4rem; }
+    .hour-emoji { font-size: 1rem; display: block; margin-bottom: .4rem; }
+    .hour-temp  { font-size: .42rem; color: var(--yellow); }
+
+    /* ── XP / FEELS LIKE BAR ── */
+    .xp-section { margin-bottom: 2rem; }
+
+    .xp-row {
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+      margin-bottom: .6rem;
+    }
+
+    .xp-label { font-size: .38rem; color: var(--pink-pale); width: 80px; flex-shrink: 0; letter-spacing: .04em; }
+
+    .xp-bar-wrap {
+      flex: 1;
+      height: 16px;
+      background: #111;
+      border: 3px solid var(--pink-dark);
+      box-shadow: inset 2px 2px 0 #000;
+      overflow: hidden;
+    }
+
+    .xp-bar-fill {
+      height: 100%;
+      image-rendering: pixelated;
+      transition: width .8s steps(20);
+    }
+
+    .xp-val { font-size: .38rem; color: var(--yellow); width: 40px; text-align: right; flex-shrink: 0; }
+
+    /* ── FOOTER ── */
+    .app-footer {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: .35rem;
+      color: var(--pink-dark);
+      letter-spacing: .1em;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes flicker {
+      0%,95%,100% { opacity: 1; }
+      96%          { opacity: .85; }
+      97%          { opacity: 1; }
+      98%          { opacity: .9; }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(32px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes bob  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+
+    .bob { animation: bob 2s steps(4) infinite; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 500px) {
+      .forecast-grid { grid-template-columns: repeat(3, 1fr); }
+      .current-weather { grid-template-columns: 1fr; text-align: center; }
+      .stats-row { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <span class="game-title">⛏ WEATHERCRAFT ⛏</span>
+    <span class="game-subtitle">— pixel forecast edition —</span>
+  </header>
+
+  <div class="search-wrap">
+    <input type="text" id="city-input" placeholder="ENTER CITY NAME..." />
+    <button id="search-btn">SEARCH</button>
+  </div>
+
+  <div class="main-panel px-box" id="weather-panel">
+
+    <!-- CURRENT -->
+    <div class="current-weather">
+      <div class="weather-icon bob">
+        <canvas id="icon-canvas" width="16" height="16"></canvas>
+      </div>
+      <div>
+        <div class="city-name" id="city-display">LONDON, UK</div>
+        <div class="temp-big" id="temp-display">14°C</div>
+        <div class="condition" id="condition-display">PARTLY CLOUDY</div>
+        <div class="stats-row">
+          <span class="stat-pill wind"  id="wind-display">💨 12 KM/H</span>
+          <span class="stat-pill humid" id="humid-display">💧 78%</span>
+          <span class="stat-pill feels" id="feels-display">🌡 FEELS 11°C</span>
+          <span class="stat-pill uv"    id="uv-display">☀ UV 3</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOURLY -->
+    <div class="section-label">▶ HOURLY FORECAST</div>
+    <div class="hourly-scroll" id="hourly-row"></div>
+
+    <!-- 5-DAY -->
+    <div class="section-label">▶ 5-DAY QUEST LOG</div>
+    <div class="forecast-grid" id="forecast-grid"></div>
+
+    <!-- XP BARS -->
+    <div class="section-label">▶ WEATHER STATS</div>
+    <div class="xp-section" id="xp-section"></div>
+
+    <div class="app-footer">[ WEATHERCRAFT v1.0 ] — BUILT WITH HTML, CSS &amp; JS</div>
+  </div>
+
+  <script>
+    // ================================================================
+    // MOCK WEATHER DATA
+    // In a real app you'd fetch this from an API like OpenWeatherMap.
+    // For now we generate realistic fake data so we can build the UI.
+    // ================================================================
+
+    // Object: a collection of key-value pairs (like a dictionary)
+    const weatherData = {
+      london:   { city: "LONDON",    country: "UK", temp: 14, feels: 11, condition: "PARTLY CLOUDY", wind: 12, humidity: 78, uv: 3,  icon: "cloud" },
+      tokyo:    { city: "TOKYO",     country: "JP", temp: 22, feels: 24, condition: "SUNNY",         wind: 8,  humidity: 55, uv: 7,  icon: "sun"   },
+      new_york: { city: "NEW YORK",  country: "US", temp: 9,  feels: 6,  condition: "RAINY",         wind: 18, humidity: 88, uv: 1,  icon: "rain"  },
+      sydney:   { city: "SYDNEY",    country: "AU", temp: 28, feels: 30, condition: "CLEAR & HOT",   wind: 15, humidity: 42, uv: 9,  icon: "sun"   },
+      paris:    { city: "PARIS",     country: "FR", temp: 17, feels: 15, condition: "OVERCAST",      wind: 10, humidity: 70, uv: 2,  icon: "cloud" },
+      dubai:    { city: "DUBAI",     country: "AE", temp: 38, feels: 42, condition: "SCORCHING",     wind: 5,  humidity: 30, uv: 11, icon: "sun"   },
+      moscow:   { city: "MOSCOW",    country: "RU", temp: -3, feels: -8, condition: "SNOWING",       wind: 22, humidity: 90, uv: 1,  icon: "snow"  },
+    };
+
+    // Days and weather icons for forecast
+    const days    = ["MON","TUE","WED","THU","FRI","SAT","SUN"];
+    const icons   = { sun: "☀️", cloud: "⛅", rain: "🌧", snow: "❄️", storm: "⛈" };
+    const iconArr = ["☀️","⛅","🌧","⛈","🌤","🌦","❄️"];
+
+    // ── PIXEL ART ICONS drawn on a <canvas> ──
+    // Canvas lets us draw pixel-by-pixel using JavaScript
+    function drawIcon(type) {
+      const canvas = document.getElementById("icon-canvas");
+      const ctx    = canvas.getContext("2d"); // "2d" drawing context
+      ctx.clearRect(0, 0, 16, 16);            // clear the canvas
+
+      // Each array row = one row of pixels
+      // Each number = a color index (0=transparent, 1=yellow, 2=white, 3=pink, 4=cyan)
+      const palettes = {
+        sun: {
+          colors: ["", "#ffe600","#fff8a0"],
+          pixels: [
+            [0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0],
+            [0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0],
+            [0,1,0,0,0,2,2,2,2,2,2,0,0,0,1,0],
+            [1,0,0,2,2,2,2,2,2,2,2,2,2,0,0,1],
+            [0,0,2,2,2,1,2,2,2,2,1,2,2,2,0,0],
+            [0,0,2,2,1,2,2,2,2,2,2,1,2,2,0,0],
+            [1,0,2,2,2,2,2,2,2,2,2,2,2,2,0,1],
+            [0,0,2,2,2,2,2,2,2,2,2,2,2,2,0,0],
+            [0,0,2,2,2,2,2,2,2,2,2,2,2,2,0,0],
+            [1,0,2,2,1,2,2,2,2,2,2,1,2,2,0,1],
+            [0,0,2,2,2,1,2,2,2,2,1,2,2,2,0,0],
+            [1,0,0,2,2,2,2,2,2,2,2,2,2,0,0,1],
+            [0,1,0,0,0,2,2,2,2,2,2,0,0,0,1,0],
+            [0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0],
+            [0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          ]
+        },
+        cloud: {
+          colors: ["","#ff69b4","#ffb6d9","#ffffff"],
+          pixels: [
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0],
+            [0,0,0,1,1,2,2,2,1,1,0,0,0,0,0,0],
+            [0,0,1,2,2,2,2,2,2,2,1,0,0,0,0,0],
+            [0,0,1,2,2,2,2,2,2,2,2,1,1,0,0,0],
+            [0,1,2,2,2,2,2,2,2,2,2,2,2,1,0,0],
+            [0,1,3,3,3,3,3,3,3,3,3,3,3,3,1,0],
+            [1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1],
+            [1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1],
+            [1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1],
+            [0,1,3,3,3,3,3,3,3,3,3,3,3,3,1,0],
+            [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          ]
+        },
+        rain: {
+          colors: ["","#7ec8e3","#b0e0f7","#00cfff","#ff69b4"],
+          pixels: [
+            [0,0,0,0,0,4,4,4,0,0,0,0,0,0,0,0],
+            [0,0,0,4,4,4,4,4,4,4,0,0,0,0,0,0],
+            [0,0,4,4,4,4,4,4,4,4,4,0,0,0,0,0],
+            [0,4,4,4,4,4,4,4,4,4,4,4,4,0,0,0],
+            [0,1,2,2,2,2,2,2,2,2,2,2,2,1,0,0],
+            [1,2,2,2,2,2,2,2,2,2,2,2,2,2,1,0],
+            [1,2,2,2,2,2,2,2,2,2,2,2,2,2,1,0],
+            [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+            [0,0,3,0,3,0,3,0,3,0,3,0,3,0,0,0],
+            [0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,0],
+            [0,0,3,0,3,0,3,0,3,0,3,0,3,0,0,0],
+            [0,3,0,3,0,3,0,3,0,3,0,3,0,3,0,0],
+            [0,0,3,0,3,0,3,0,3,0,3,0,3,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          ]
+        },
+        snow: {
+          colors: ["","#ffffff","#b0e0f7","#ff69b4"],
+          pixels: [
+            [0,0,0,0,0,3,3,3,3,0,0,0,0,0,0,0],
+            [0,0,0,3,3,3,3,3,3,3,3,0,0,0,0,0],
+            [0,0,3,3,3,3,3,3,3,3,3,3,0,0,0,0],
+            [0,3,3,3,3,3,3,3,3,3,3,3,3,0,0,0],
+            [0,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0],
+            [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0],
+            [0,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0],
+            [0,0,2,2,2,2,2,2,2,2,2,2,2,0,0,0],
+            [0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0],
+            [0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0],
+            [0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0],
+            [0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],
+            [0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          ]
+        }
+      };
+
+      const iconData = palettes[type] || palettes.cloud;
+
+      // Loop through every pixel row and column
+      iconData.pixels.forEach((row, y) => {
+        row.forEach((colorIndex, x) => {
+          if (colorIndex === 0) return; // 0 = transparent, skip
+          ctx.fillStyle = iconData.colors[colorIndex];
+          ctx.fillRect(x, y, 1, 1); // draw 1x1 pixel
+        });
+      });
+    }
+
+
+    // ================================================================
+    // RENDER WEATHER — updates all the DOM elements with new data
+    // ================================================================
+    function renderWeather(data) {
+      // Update current weather
+      document.getElementById("city-display").textContent    = `${data.city}, ${data.country}`;
+      document.getElementById("temp-display").textContent    = `${data.temp}°C`;
+      document.getElementById("condition-display").textContent = data.condition;
+      document.getElementById("wind-display").textContent    = `💨 ${data.wind} KM/H`;
+      document.getElementById("humid-display").textContent   = `💧 ${data.humidity}%`;
+      document.getElementById("feels-display").textContent   = `🌡 FEELS ${data.feels}°C`;
+      document.getElementById("uv-display").textContent      = `☀ UV ${data.uv}`;
+
+      // Draw pixel icon
+      drawIcon(data.icon);
+
+      // ── HOURLY FORECAST ──
+      // Array.from creates an array of 8 items, then .map transforms each one
+      const hourlyHTML = Array.from({ length: 8 }, (_, i) => {
+        const hour    = (new Date().getHours() + i) % 24;
+        const randTemp = data.temp + Math.floor(Math.random() * 6) - 2;
+        const randIcon = iconArr[Math.floor(Math.random() * iconArr.length)];
+        const label   = i === 0 ? "NOW" : `${String(hour).padStart(2,"0")}:00`;
+        return `
+          <div class="hour-block ${i === 0 ? "now" : ""}">
+            <div class="hour-time">${label}</div>
+            <span class="hour-emoji">${randIcon}</span>
+            <div class="hour-temp">${randTemp}°</div>
+          </div>`;
+      }).join(""); // .join("") merges array of strings into one string
+      document.getElementById("hourly-row").innerHTML = hourlyHTML;
+
+      // ── 5-DAY FORECAST ──
+      const today = new Date().getDay(); // 0=Sun, 1=Mon ...
+      const forecastHTML = Array.from({ length: 5 }, (_, i) => {
+        const dayName  = days[(today + i) % 7];
+        const hi = data.temp + Math.floor(Math.random() * 5);
+        const lo = data.temp - Math.floor(Math.random() * 6) - 2;
+        const icon = iconArr[Math.floor(Math.random() * iconArr.length)];
+        return `
+          <div class="forecast-card">
+            <div class="forecast-day">${i === 0 ? "TODAY" : dayName}</div>
+            <span class="forecast-emoji">${icon}</span>
+            <div class="forecast-hi">▲${hi}°</div>
+            <div class="forecast-lo">▼${lo}°</div>
+          </div>`;
+      }).join("");
+      document.getElementById("forecast-grid").innerHTML = forecastHTML;
+
+      // ── XP / STATS BARS ──
+      // Array of stat objects — each has a label, value, max, and color
+      const stats = [
+        { label: "HUMIDITY",  val: data.humidity, max: 100, color: "linear-gradient(90deg,#00f5ff,#0077ff)" },
+        { label: "WIND SPD",  val: data.wind,     max: 50,  color: "linear-gradient(90deg,#39ff14,#00ff88)" },
+        { label: "UV INDEX",  val: data.uv,        max: 12,  color: "linear-gradient(90deg,#ffe600,#ff6600)" },
+        { label: "FEELS LIKE",val: Math.max(0, data.feels + 20), max: 60, color: "linear-gradient(90deg,#ff69b4,#ff1493)" },
+      ];
+
+      // .map transforms each stat object into an HTML string
+      const xpHTML = stats.map(s => {
+        const pct = Math.min(100, (s.val / s.max) * 100);
+        return `
+          <div class="xp-row">
+            <div class="xp-label">${s.label}</div>
+            <div class="xp-bar-wrap">
+              <div class="xp-bar-fill" style="width:${pct}%; background:${s.color}"></div>
+            </div>
+            <div class="xp-val">${s.val}</div>
+          </div>`;
+      }).join("");
+      document.getElementById("xp-section").innerHTML = xpHTML;
+    }
+
+
+    // ================================================================
+    // SEARCH LOGIC
+    // Normalises the input and looks up the matching city
+    // ================================================================
+    function searchCity(raw) {
+      // .toLowerCase() and .replace() clean up the input for matching
+      const key = raw.toLowerCase().trim().replace(/\s+/g, "_");
+
+      // Check if we have data for that city
+      if (weatherData[key]) {
+        renderWeather(weatherData[key]);
+      } else {
+        // Generate random data for unknown cities — makes any search "work"
+        const condOptions = ["PARTLY CLOUDY","SUNNY","RAINY","OVERCAST","STORMY","CLEAR"];
+        const iconOptions = ["sun","cloud","rain","snow"];
+        renderWeather({
+          city:      raw.toUpperCase(),
+          country:   "??",
+          temp:      Math.floor(Math.random() * 35) - 5,
+          feels:     Math.floor(Math.random() * 35) - 8,
+          condition: condOptions[Math.floor(Math.random() * condOptions.length)],
+          wind:      Math.floor(Math.random() * 30) + 2,
+          humidity:  Math.floor(Math.random() * 60) + 30,
+          uv:        Math.floor(Math.random() * 11),
+          icon:      iconOptions[Math.floor(Math.random() * iconOptions.length)],
+        });
+      }
+    }
+
+    // ── EVENT LISTENERS ──
+
+    // Search button click
+    document.getElementById("search-btn").addEventListener("click", () => {
+      const val = document.getElementById("city-input").value;
+      if (val.trim()) searchCity(val);
+    });
+
+    // Press Enter in the input field
+    document.getElementById("city-input").addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        const val = document.getElementById("city-input").value;
+        if (val.trim()) searchCity(val);
+      }
+    });
+
+    // ── LOAD DEFAULT CITY ON PAGE LOAD ──
+    renderWeather(weatherData["london"]);
+
+  </script>
+</body>
+</html>
