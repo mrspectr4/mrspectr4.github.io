@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ENG3103: Project Management Quick Cheatsheet</title>
+    <style>
+        /* A4 Print Setup */
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+        body {
+            width: 210mm; /* A4 width */
+            margin: 0 auto;
+            padding: 15px;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 8pt;
+            line-height: 1.25;
+            color: #111;
+            background: #fff;
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #2c3e50;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+        }
+        h1 {
+            font-size: 13pt;
+            margin: 0;
+            color: #2c3e50;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 6px 12px;
+            font-size: 8.5pt;
+            cursor: pointer;
+            background: #2980b9;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        button:hover { background: #1a5276; }
+        button.clear-btn { background: #e74c3c; }
+        button.clear-btn:hover { background: #922b21; }
+
+        .container {
+            column-count: 2;
+            column-gap: 15px;
+            column-rule: 1px dashed #bdc3c7;
+        }
+        .section {
+            break-inside: avoid;
+            margin-bottom: 10px;
+            background: #fdfbf7;
+            border: 1px solid #ecf0f1;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        h2 {
+            font-size: 9.5pt;
+            color: #c0392b;
+            margin: 0 0 5px 0;
+            border-bottom: 1px solid #e74c3c;
+            padding-bottom: 2px;
+        }
+        ul { margin: 0; padding-left: 14px; }
+        li { margin-bottom: 3px; }
+        .math { font-family: 'Times New Roman', serif; font-style: italic; font-weight: bold; color: #2980b9; }
+        .formula { display: block; text-align: center; margin: 4px 0; font-size: 8.5pt; }
+        table.node { width: 100%; border-collapse: collapse; margin: 5px 0; text-align: center; background: white; }
+        table.node th, table.node td { border: 1px solid #7f8c8d; padding: 3px; font-size: 7.5pt; }
+        .highlight { font-weight: bold; color: #2c3e50; }
+        
+        /* Editable Custom Notes */
+        .custom-notes {
+            margin-top: 6px;
+            padding: 5px;
+            border: 1px dashed #bdc3c7;
+            background: #fffdf2;
+            min-height: 20px;
+            font-style: italic;
+            color: #555;
+            transition: all 0.2s;
+            border-radius: 3px;
+        }
+        .custom-notes:focus {
+            outline: none;
+            border-color: #f39c12;
+            background: #fff;
+            color: #111;
+            font-style: normal;
+        }
+        .custom-notes:empty:before {
+            content: "📝 Click to add custom notes, formulas, or tips...";
+            color: #999;
+        }
+
+        /* Print Specific Styling */
+        @media print {
+            .no-print { display: none !important; }
+            body { padding: 0; margin: 0; width: 100%; background: #fff; }
+            .section { border: 1px solid #000; break-inside: avoid; }
+            .custom-notes:empty { display: none; } /* Hides empty note boxes on printed PDF */
+            .custom-notes { border: none; background: transparent; padding: 0; font-style: normal; color: #000; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-container no-print">
+        <h1>ENG3103: Project Management Quick Cheatsheet</h1>
+        <div class="controls">
+            <button onclick="window.print()">🖨️ Save as PDF</button>
+            <button class="clear-btn" onclick="clearNotes()">🗑️ Clear Notes</button>
+        </div>
+    </div>
+    
+    <!-- Title for print view -->
+    <h1 class="print-only" style="display:none; text-align:center; margin-bottom: 15px;">ENG3103: Project Management Cheatsheet</h1>
+
+    <div class="container">
+        <!-- Chapter 1 -->
+        <div class="section">
+            <h2>CH 1: Modern Project Management</h2>
+            <ul>
+                <li><span class="highlight">Project:</span> Temporary endeavor, defined start/end, unique deliverable, constrained by scope, time, budget, quality.</li>
+                <li><span class="highlight">Socio-Technical Dimension:</span>
+                    <ul>
+                        <li><b>Technical (Science):</b> Scope, WBS, Schedules, Resource Allocation, Budgets, Status Reports.</li>
+                        <li><b>Sociocultural (Art):</b> Leadership, Teamwork, Negotiation, Politics, Expectations.</li>
+                    </ul>
+                </li>
+                <li><span class="highlight">Governance:</span> Centralized management ensuring projects align with strategy and resources.</li>
+            </ul>
+            <div class="custom-notes" contenteditable="true" id="note-ch1"></div>
+        </div>
+
+        <!-- Chapter 2 -->
+        <div class="section">
+            <h2>CH 2: Strategy & Selection</h2>
+            <ul>
+                <li><span class="highlight">Strategic Alignment:</span> Projects execute organizational strategy. Selection must eliminate waste.</li>
+                <li><span class="highlight">Financial Models:</span>
+                    <ul>
+                        <li><b>Payback Pd:</b> <span class="math">Est. Cost / Annual Net Inflow</span></li>
+                        <li><b>NPV:</b> <span class="math">I&#8320; + &Sigma; [ F<sub>t</sub> / (1 + k)<sup>t</sup> ]</span></li>
+                    </ul>
+                </li>
+                <li><span class="highlight">Multi-Weighted Scoring:</span> Combines weighted strategic/technical criteria: <span class="math">&Sigma; (Weight &times; Rating)</span></li>
+            </ul>
+            <div class="custom-notes" contenteditable="true" id="note-ch2"></div>
+        </div>
+
+        <!-- Chapter 3 -->
+        <div class="section">
+            <h2>CH 3: Structure & Culture</h2>
+            <ul>
+                <li><span class="highlight">Functional:</span> Standard hierarchy; PM has low authority.</li>
+                <li><span class="highlight">Dedicated:</span> Self-contained; PM has full authority.</li>
+                <li><span class="highlight">Matrix:</span> Dual authority (Functional Mgr + PM).
+                    <ul>
+                        <li><i>Weak:</i> Functional mgr dominates.</li>
+                        <li><i>Balanced:</i> PM defines <i>what</i>, Func defines <i>how</i>.</li>
+                        <li><i>Strong:</i> PM controls decisions, Func provides staff.</li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="custom-notes" contenteditable="true" id="note-ch3"></div>
+        </div>
+
+        <!-- Chapter 4 -->
+        <div class="section">
+            <h2>CH 4: Defining the Project</h2>
+            <ul>
+                <li><span class="highlight">Scope Statement:</span> Objectives, deliverables, milestones, technical specs, boundaries, exclusions.</li>
+                <li><span class="highlight">Priority Matrix:</span> Balance Cost, Time, Performance across Constrain (fixed), Enhance (optimize), Accept.</li>
+                <li><span class="highlight">WBS:</span> Hierarchical map breaking project into Work Packages (lowest level).</li>
+                <li><span class="highlight">OBS:</span> Integrates WPs with org units (Cost Accounts).</li>
+                <li><span class="highlight">RACI:</span> Responsible, Accountable, Consulted, Informed.</li>
+            </ul>
+            <div class="custom-notes" contenteditable="true" id="note-ch4"></div>
+        </div>
+
+        <!-- Chapter 5 -->
+        <div class="section">
+            <h2>CH 5: Estimating Times & Costs</h2>
+            <ul>
+                <li><span class="highlight">Top-Down (Macro):</span> Early/strategic (Delphi, Ratio, Apportionment). Fast but less accurate.</li>
+                <li><span class="highlight">Bottom-Up (Micro):</span> WBS roll-up. Highly accurate, used for fixed-price bidding.</li>
+                <li><span class="highlight">Cost Types:</span> 
+                    <ul>
+                        <li><b>Direct:</b> Labor, materials, equipment.</li>
+                        <li><b>Direct Overhead:</b> PM salary, temporary facilities.</li>
+                        <li><b>G&amp;A Overhead:</b> Corporate indirect costs.</li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="custom-notes" contenteditable="true" id="note-ch5"></div>
+        </div>
+
+        <!-- Chapter 6 -->
+        <div class="section">
+            <h2>CH 6: Project Network & Time</h2>
+            <ul>
+                <li><span class="highlight">Forward Pass (Early):</span> 
+                    <br><span class="math">ES = max(EF of predecessors)</span>
+                    <br><span class="math">EF = ES + Duration</span>
+                </li>
+                <li><span class="highlight">Backward Pass (Late):</span>
+                    <br><span class="math">LF = min(LS of successors)</span>
+                    <br><span class="math">LS = LF - Duration</span>
+                </li>
+                <li><span class="highlight">Slack / Float:</span>
+                    <ul>
+                        <li><b>Total Slack (TS):</b> Max delay without delaying project. <span class="math">TS = LS - ES = LF - EF</span></li>
+                        <li><b>Free Slack (FS):</b> Max delay without delaying <i>any</i> successor. <span class="math">FS = min(ES<sub>succ</sub>) - EF</span></li>
+                    </ul>
+                </li>
+                <li><span class="highlight">Critical Path:</span> Longest path; shortest duration; all activities have <span class="math">TS = 0</span>.</li>
+            </ul>
+            <table class="node">
+                <tr><th>ES</th><th>ID</th><th>EF</th></tr>
+                <tr><th>SL</th><th colspan="2">Activity</th></tr>
+                <tr><th>LS</th><th>Dur</th><th>LF</th></tr>
+            </table>
+            <div class="custom-notes" contenteditable="true" id="note-ch6"></div>
+        </div>
+
+        <!-- Chapter 8 -->
+        <div class="section">
+            <h2>CH 8: Scheduling Resources & Costs</h2>
+            <ul>
+                <li><span class="highlight">Constraints:</span> Technical (logic/sequence) vs Resource.</li>
+                <li><span class="highlight">Time-Constrained:</span> Fixed end-date. Use <b>Smoothing</b> (delay non-critical tasks within TS to level peaks).</li>
+                <li><span class="highlight">Resource-Constrained:</span> Fixed resources. Use <b>Leveling</b> (delays tasks, usually extends duration).</li>
+                <li><span class="highlight">Priority Heuristics (Leveling):</span> 1. Min Slack, 2. Smallest Duration, 3. Lowest ID.</li>
+                <li><span class="highlight">Time-Phased Budget:</span> Distributes budget over schedule for EVM.</li>
+            </ul>
+            <div class="custom-notes" contenteditable="true" id="note-ch8"></div>
+        </div>
+
+        <!-- Chapter 9 -->
+        <div class="section">
+            <h2>CH 9: Reducing Project Duration</h2>
+            <ul>
+                <li><span class="highlight">Compression Options:</span>
+                    <ul>
+                        <li><i>Unlimited Res:</i> Crashing (overtime), Outsourcing.</li>
+                        <li><i>Constrained Res:</i> Fast-tracking (SS lags), reduce scope.</li>
+                    </ul>
+                </li>
+                <li><span class="highlight">Crashing Steps:</span>
+                    <ol style="margin: 0; padding-left: 18px;">
+                        <li>Find Critical Path(s).</li>
+                        <li>Calculate <b>Cost Slope</b> for activities.</li>
+                        <li>Crash critical activity with <b>lowest Cost Slope</b>.</li>
+                        <li>Check for new critical paths. Stop when target met.</li>
+                    </ol>
+                </li>
+                <span class="math formula">Slope = (Crash Cost - Normal Cost) / (Normal Time - Crash Time)</span>
+            </ul>
+            <div class="custom-notes" contenteditable="true" id="note-ch9"></div>
+        </div>
+    </div>
+
+    <!-- Script to handle saving and loading notes -->
+    <script>
+        // Load saved notes from LocalStorage on page load
+        document.addEventListener("DOMContentLoaded", () => {
+            document.querySelectorAll('.custom-notes').forEach(note => {
+                const savedContent = localStorage.getItem(note.id);
+                if (savedContent) {
+                    note.innerHTML = savedContent;
+                }
+                
+                // Save to LocalStorage whenever the user types
+                note.addEventListener('input', () => {
+                    localStorage.setItem(note.id, note.innerHTML);
+                });
+            });
+            
+            // Adjust header display for printing
+            window.onbeforeprint = function() {
+                document.querySelector('.print-only').style.display = 'block';
+            };
+            window.onafterprint = function() {
+                document.querySelector('.print-only').style.display = 'none';
+            };
+        });
+
+        function clearNotes() {
+            if(confirm("Are you sure you want to clear all your custom notes? This cannot be undone.")) {
+                document.querySelectorAll('.custom-notes').forEach(note => {
+                    note.innerHTML = '';
+                    localStorage.removeItem(note.id);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
